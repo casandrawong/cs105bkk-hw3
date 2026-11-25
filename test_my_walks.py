@@ -20,4 +20,30 @@ def test_core_example_a_good_row_becomes_a_walk(good_row):
     assert parse_walk(good_row) == Walk("2026-11-16", 4200, "Lumphini Park")
 
 
-# Your tests go here.
+def test_parse_walk_strips_date_and_place(good_row):
+    good_row["date"] = " 2026-11-16 "
+    good_row["place"] = " Lumphini Park "
+    assert parse_walk(good_row) == Walk("2026-11-16", 4200, "Lumphini Park")
+
+
+def test_parse_walk_accepts_zero_steps(good_row):
+    good_row["steps"] = "0"
+    assert parse_walk(good_row) == Walk("2026-11-16", 0, "Lumphini Park")
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("date", ""),
+        ("date", "   "),
+        ("steps", ""),
+        ("steps", "abc"),
+        ("steps", "12.5"),
+        ("steps", "1_000"),
+        ("steps", "-300"),
+    ],
+)
+def test_parse_walk_rejects_bad_values(good_row, field, value):
+    good_row[field] = value
+    with pytest.raises(ValueError):
+        parse_walk(good_row)
